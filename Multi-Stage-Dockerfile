@@ -1,0 +1,26 @@
+# Stage 1: Build
+FROM python:3.9-slim as builder
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --user -r requirements.txt
+
+# Copy source code
+COPY . .
+
+# Stage 2: Production runtime
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Copy only necessary files from builder
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /app .
+
+# Set PATH for pip packages
+ENV PATH=/root/.local/bin:$PATH
+
+# Command to run
+CMD ["python", "app.py"]
